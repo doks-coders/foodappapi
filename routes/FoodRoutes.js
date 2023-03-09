@@ -53,7 +53,7 @@ router.post("/get-cartitem/",upload,API.getCartItems)
 router.post("/edit-cartitem/",upload,API.editCartItems)
 
 
-router.get("/set-cart-order-active",API.setCArtOrderToActive)
+router.post("/set-cart-order-active/:id",upload,API.setCArtOrderToActive)
 router.get("/set-cart-order-recieved",API.setCartOrderRecieved)
 
 

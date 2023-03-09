@@ -10,6 +10,9 @@ const postSchema = mongoose.Schema({
     orderRecieved:Boolean,
     orderDelivered:Boolean,
     orderCancelled:Boolean,
+    chosenPaymentName:String,
+    locationName:String,
+    locationCoordinates:Object,
     
     created:{
         type:Date,

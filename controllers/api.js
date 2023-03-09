@@ -405,9 +405,11 @@ static async registerUserMethod(req,res){
 
     static async setCArtOrderToActive(req, res) {
 
-        const { cartid } = req.query;
+        const cartid  = req.params.id;
+        const object = req.body
+        console.log({object})
         try {
-            const cartSetup = await Cart.updateOne({ _id: cartid }, { $set: { orderSent: true } })
+            const cartSetup = await Cart.updateOne({ _id: cartid }, { $set: { orderSent: true,...object } })
             console.log(cartid)
 
             res.status(200).json({ message: cartSetup });
