@@ -33,13 +33,12 @@ module.exports = class API {
     static async fetchAllItems(req, res) {
         try {
 
-            const users = await Users.find();
             const recipes = await Recipes.find()
             const procurers = await Procurers.find()
             const products = await Products.find()
             const equipments = await Equipments.find()
 
-            res.status(200).json({ users, recipes, procurers, products, equipments });
+            res.status(200).json({  recipes, procurers, products, equipments });
         } catch (err) {
             res.status(404).json({ message: err.message })
         }
