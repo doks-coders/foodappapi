@@ -120,9 +120,36 @@ const sendEmail =({msg})=>{
     })
   }
 
+  const getArrayFromOneWord = ({name,baseArray,arrayKey,targetKey})=>{
+    /**
+     * Example = User = [{students:[{name:'Daniel'},{name:'Shawn'} ]}]
+     * baseArray = Users
+     * arrayKey = students
+     * targetKey = name
+     * 
+     * name = {Any name or text for comparism}
+     */
+    console.log({baseArray})
+    console.log({arrayKey})
+    console.log({targetKey})
+    let resultArray = []
+ 
+    baseArray.forEach((baseValue)=>{
+      baseValue['_doc'][arrayKey].forEach((val)=>{
+        console.log(val[targetKey])
+        console.log({name})
+        if(val[targetKey] ===name){
+          resultArray.push(baseValue)
+        }
+      })
+    })
+    return resultArray
+  }
   
 
-  module.exports = {configureProcurement,uid1,getSelectedChatRooms,sendEmail,uidNumber}
+  
+
+  module.exports = {configureProcurement,uid1,getSelectedChatRooms,sendEmail,uidNumber,getArrayFromOneWord}
 
 
 

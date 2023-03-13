@@ -7,8 +7,12 @@ const Chatrooms = require('../models/chatrooms')
 const Products = require('../models/products');
 const Equipments = require('../models/equipments');
 const Finishedorders = require('../models/finishedorders')
+const client = require('@sendgrid/client')
+const fetch = require('node-fetch')
+const request = require('request')
 
-const { configureProcurement, uid1, getSelectedChatRooms,sendEmail, uidNumber } = require('../misc/index');
+
+const { configureProcurement, uid1, getSelectedChatRooms,sendEmail, uidNumber,getArrayFromOneWord } = require('../misc/index');
 
 const mongoose = require('mongoose');
 const fs = require('fs')
@@ -30,15 +34,79 @@ const { db } = mongoose.connection;
 
 
 module.exports = class API {
+
+
+  static async deleteSendGridKey(req,res){
+
+client.setApiKey(process.env.SENDGRIDKEY)
+
+const api_key_id = '2Ut-YCzpTUypCALuGwVtvA'; 
+const headers = { 
+        "on-behalf-of": "The subuser's username. This header generates the API call as if the subuser account was making the call." ,
+        Authorization: `Bearer ${api_key_id}`
+            }; 
+/*const request = { 
+    url: `/v3/api_keys/${api_key_id}`, 
+method: 'DELETE', 
+headers: headers 
+}
+*/
+
+
+var options = { method: 'DELETE', 
+url: `https://api.sendgrid.com/v3/api_keys/${api_key_id}`, 
+headers: { Authorization: `Bearer ${process.env.SENDGRIDKEY}`, 
+'on-behalf-of': "The subuser's username. This header generates the API call" } 
+}; 
+request(options, function (error, response) 
+{ if (error) throw new Error(error); 
+    console.log(response.body); 
+    res.status(201).json({response})
+});
+/*
+
+let result = await fetch(`https://api.sendgrid.com/v3/api_keys/${api_key_id}`,
+{
+  method: "DELETE",
+  headers: { 
+    "on-behalf-of": "The subuser's username. This header generates the API call as if the subuser account was making the call." ,
+    "Authorization": `Bearer ${api_key_id}`
+}
+})
+.then((response) => response.json())
+.then((responseData) => {
+    res.status(201).json({responseData}) ;
+})
+.catch(error => {console.warn(error);
+    res.status(404).json({error}) 
+});
+return result
+*/
+
+/*
+client.request(request).then(([response,body])=>{
+
+}) .catch(error => {
+        console.warn(error)
+        res.status(404).json({error}) ;
+    });
+    */
+
+}
+
+
+
+  
     static async fetchAllItems(req, res) {
         try {
 
+        
             const recipes = await Recipes.find()
-            const procurers = await Procurers.find()
+            const procurers = await Procurers.find({},{cartKeys:0,chatrooms:0,testimonials:0,notifications:0})
             const products = await Products.find()
             const equipments = await Equipments.find()
 
-            res.status(200).json({  recipes, procurers, products, equipments });
+            res.status(200).json({recipes, procurers, products, equipments });
         } catch (err) {
             res.status(404).json({ message: err.message })
         }
@@ -81,6 +149,48 @@ module.exports = class API {
             res.status(404).json({ message: err.message })
         }
     }
+
+    static async getProductID(req, res) {
+  
+
+ 
+        try {
+     
+            const {id,type} = req.body
+           
+            const procurer = await Procurers.find({},{ingredients:1,utensils:1,name:1})
+    
+            let allIngredients = procurer.map((val) => {
+    
+                const addedProcurerNames = val['_doc'].ingredients.map(itemVal => {
+                    return { ...itemVal, procurerName: val['_doc'].name }
+                })
+        
+                return addedProcurerNames
+            })
+            let allUtensils = procurer.map((val) => {
+        
+                const addedProcurerNames = val['_doc'].utensils.map(itemVal => {
+                    return { ...itemVal, procurerName: val['_doc'].name }
+                })
+                return addedProcurerNames
+            })
+        
+            let result = [...allIngredients, ...allUtensils]
+            let allItems = ([].concat(...result))
+
+              const productItem = allItems.filter((val)=>val.id==id)[0]
+             
+              console.log({productItem})
+                res.status(200).json(productItem);
+
+        } catch (err) {
+            res.status(404).json({ message: err.message })
+        }
+        
+    }
+
+    
 
 
     static async fetchProductItem(req, res) {
@@ -126,7 +236,31 @@ module.exports = class API {
         }
     }
 
+    static async getIngredientsProcurerInfo(req, res) {
+    const {name,arrayKey,targetKey,type} = req.body
+    
+    //{name:ingredientProcurementDetails.name,baseArray:allProcurers,arrayKey:'ingredients',targetKey:'name'}
+    try {
+        if(type=='procurers'){
+            const allProcurers = await Procurers.find({},{ingredients:1,utensils:1,location:1,image:1,text:1,name:1})
+            let result = getArrayFromOneWord({name,baseArray:allProcurers,arrayKey,targetKey})
+            res.status(201).json(result)
+        }
+        
+        if(type=='recipes'){
+            const allRecipes = await Recipes.find({},{ingredients:1,utensils:1,image:1,name:1})
+            let result = getArrayFromOneWord({name,baseArray:allRecipes,arrayKey,targetKey})
+            res.status(201).json(result)
+        }
+       
+        } catch (error) {
+            res.status(404).json({ message: error.message })
+        }
+    }
 
+
+
+    
     static async getUserWithFirebaseid(req,res){
        const fireid = req.params.id
         try {

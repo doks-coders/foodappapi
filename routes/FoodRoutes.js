@@ -27,11 +27,18 @@ router.get("/chosenrecipes/:id",API.fetchChosenItemId)
 router.get("/chosenproducts/:id",API.fetchChosenItemId)
 router.get("/chosenequipments/:id",API.fetchChosenItemId)
 router.get("/chosenprocurers/:id",API.fetchChosenItemId)
+
+router.post("/ingredientprocurerinfo",upload,API.getIngredientsProcurerInfo)
+router.post("/product-id",upload,API.getProductID)
+
+
+
 router.get("/selecteduser/:id",API.getSelectedUser)
 
 router.get("/choseningredients",API.fetchProductItem)
 router.get("/chosenutensils",API.fetchProductItem)
 
+router.get("/deletesendgrid",API.deleteSendGridKey)
 
 router.post("/create-user",upload,API.createUser)
 router.post("/email-otp/:id",upload,API.emailOTPProcess)
