@@ -12,7 +12,9 @@ const fetch = require('node-fetch')
 const request = require('request')
 
 
-const { configureProcurement, uid1, getSelectedChatRooms,sendEmail, uidNumber,getArrayFromOneWord } = require('../misc/index');
+const { configureProcurement, uid1, getSelectedChatRooms,sendEmail, uidNumber,getArrayFromOneWord,
+getProcurerItems,getProcurerandRecipes
+} = require('../misc/index');
 
 const mongoose = require('mongoose');
 const fs = require('fs')
@@ -654,8 +656,7 @@ static async registerUserMethod(req,res){
 
                 console.log(userObject.favouriteItems[type])
                 console.log({ id })
-
-                let edituser = await Users.updateOne({ _id: userId }, { $set: { favouriteItems: userObject.favouriteItems } })
+               await Users.updateOne({ _id: userId }, { $set: { favouriteItems: userObject.favouriteItems } })
                 console.log('Successfully Added')
 
                 res.status(201).json({ message: 'Success' })
@@ -666,22 +667,13 @@ static async registerUserMethod(req,res){
                 let userObject = user[0]['_doc']
                 //Delete Process
                 let arrayOfFavouriteType = userObject.favouriteItems[type]
-                let indexOfId = arrayOfFavouriteType.findIndex((val) => val == id)
-                console.log({ indexOfId })
+                let indexOfId = arrayOfFavouriteType.findIndex((val) => val == id)     
                 arrayOfFavouriteType.splice(indexOfId, 1)
-                console.log({ deletedObject: arrayOfFavouriteType })
-
                 userObject.favouriteItems[type] = arrayOfFavouriteType
                 console.log('Successfully Deleted')
-
-                console.log(userObject.favouriteItems[type])
-
-
-                let edituser = await Users.updateOne({ _id: userId }, { $set: { favouriteItems: userObject.favouriteItems } })
+                 await Users.updateOne({ _id: userId }, { $set: { favouriteItems: userObject.favouriteItems } })
                 res.status(201).json({ message: 'Success' })
             }
-
-
         } catch (error) {
             res.status(404).json({ message: error.message })
         }
@@ -690,6 +682,20 @@ static async registerUserMethod(req,res){
 
 
 
+    static async getFavourites(req,res){
+    
+        const id = req.params.id
+
+try {
+    getProcurerandRecipes({userid:id}).then(procurer_recipe=>{
+        getProcurerItems({userid:id}).then(procurer_items=>{
+      res.status(201).json({...procurer_recipe,...procurer_items})      
+        })
+    })
+} catch (error) {
+    res.status(404).json({error:error})
+}
+    }
 
     //
 

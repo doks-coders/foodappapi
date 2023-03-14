@@ -71,6 +71,8 @@ router.post("/get-all-chatrooms",upload,API.getAllChatrooms)
 router.post("/send-comment",upload,API.sendComment)
 router.post("/modify-favourites/",upload,API.modifyFavourites)
 
+router.get("/getfavourites/:id",API.getFavourites)
+
 
 
 
